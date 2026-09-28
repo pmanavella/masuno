@@ -1,24 +1,30 @@
 import { NavLink } from 'react-router-dom';
-import { useToast } from '../context/ToastContext.jsx';
+import { useNotifications } from '../context/NotificationsContext.jsx';
+
+const navClass = ({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`;
 
 export function BottomNav() {
-  const showToast = useToast();
+  const { unread } = useNotifications();
 
   return (
     <nav className="bottom-nav">
-      <NavLink to="/" end className={({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`}>
+      <NavLink to="/" end className={navClass}>
         <span className="ic">🏠</span>Inicio
       </NavLink>
-      <button className="nav-btn" onClick={() => showToast('Próximamente')}>
+      <NavLink to="/mis-eventos" className={navClass}>
         <span className="ic">🎟️</span>Mis eventos
-      </button>
-      <button className="nav-plus" onClick={() => showToast('Próximamente')} aria-label="Crear evento">+</button>
-      <NavLink to="/perfil" className={({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`}>
+      </NavLink>
+      <NavLink to="/crear" className="nav-plus" aria-label="Crear evento">+</NavLink>
+      <NavLink to="/perfil" className={navClass}>
         <span className="ic">👤</span>Perfil
       </NavLink>
-      <button className="nav-btn" onClick={() => showToast('Próximamente')}>
-        <span className="ic">🔔</span>Avisos
-      </button>
+      <NavLink to="/avisos" className={navClass}>
+        <span className="ic nav-ic-badge">
+          🔔
+          {unread > 0 && <span className="nav-badge" aria-label={`${unread} avisos sin leer`}>{unread > 9 ? '9+' : unread}</span>}
+        </span>
+        Avisos
+      </NavLink>
     </nav>
   );
 }

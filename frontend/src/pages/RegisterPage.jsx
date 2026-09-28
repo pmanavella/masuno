@@ -1,85 +1,126 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { api } from '../lib/apiClient.js';
+import { TurnstileWidget } from '../components/TurnstileWidget.jsx';
+import { GoogleSignInButton } from '../components/GoogleSignInButton.jsx';
+import { checkPasswordRules, passwordMeetsRules, pwnedCount } from '../lib/passwordPolicy.js';
+import { authErrorMessage } from '../lib/authErrors.js';
 
+// Solo crea la cuenta. Los datos de identidad (DNI, nombre, fecha de nacimiento, género)
+// se cargan después en /verificacion y se validan contra ARCA desde el backend.
 export function RegisterPage() {
   const { signUp } = useAuth();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    fullName: '', email: '', password: '', phone: '', dni: '', birthDate: '',
-  });
+  const turnstileRef = useRef(null);
+  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [error, setError] = useState('');
-  const [info, setInfo] = useState('');
+  const [sentTo, setSentTo] = useState('');
   const [loading, setLoading] = useState(false);
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  const rules = checkPasswordRules(form.password);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    setInfo('');
+
+    if (!passwordMeetsRules(form.password)) {
+      setError('La contraseña no cumple todos los requisitos.');
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+    if (!captchaToken) {
+      setError('Completá la verificación de seguridad.');
+      return;
+    }
+
     setLoading(true);
     try {
-      // dni y phone se guardan sin validar; ver TODO en backend/src/models/ProfileModel.js
-      const { data, error: signUpError } = await signUp(form.email, form.password);
-      if (signUpError) throw signUpError;
-
-      if (data.session) {
-        await api.updateProfile({
-          fullName: form.fullName,
-          phone: form.phone,
-          dni: form.dni,
-          birthDate: form.birthDate,
-        });
-        navigate('/');
-      } else {
-        setInfo('Cuenta creada. Revisá tu email para confirmarla y después iniciá sesión para completar tu perfil.');
+      const leaks = await pwnedCount(form.password);
+      if (leaks > 0) {
+        setError('No creamos tu cuenta: esta contraseña apareció en filtraciones de datos. Elegí otra.');
+        return;
       }
-    } catch (err) {
-      setError(err.message);
+
+      const { error: signUpError } = await signUp(form.email, form.password, captchaToken);
+      if (signUpError) {
+        setError(authErrorMessage(signUpError));
+        return;
+      }
+      // Mismo mensaje exista o no el email, para no revelar qué cuentas existen.
+      setSentTo(form.email);
     } finally {
       setLoading(false);
+      turnstileRef.current?.reset();
     }
+  }
+
+  if (sentTo) {
+    return (
+      <div className="auth-card">
+        <h1>Revisá tu email</h1>
+        <p className="muted">
+          Si <strong>{sentTo}</strong> no tenía una cuenta, te enviamos un link para confirmarla. Después de
+          confirmar vas a verificar tu identidad con tu DNI.
+        </p>
+        <p className="muted">¿Ya confirmaste? <Link to="/login">Ingresá</Link></p>
+      </div>
+    );
   }
 
   return (
     <div className="auth-card">
       <h1>Creá tu cuenta</h1>
-      <p className="muted">Lo mínimo para que todos confíen en quién organiza y quién participa.</p>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Nombre y apellido
-          <input required value={form.fullName} onChange={(e) => update('fullName', e.target.value)} />
-        </label>
+      <p className="age-notice">+1 es solo para mayores de 18 años.</p>
+      <p className="muted">
+        Después de confirmar tu email vas a verificar tu identidad con tu DNI, para que todos sepan con quién se
+        juntan.
+      </p>
+      <form onSubmit={handleSubmit} noValidate>
         <label>
           Email
-          <input required type="email" value={form.email} onChange={(e) => update('email', e.target.value)} />
+          <input required type="email" autoComplete="email" value={form.email} onChange={(e) => update('email', e.target.value)} />
         </label>
         <label>
           Contraseña
-          <input required type="password" minLength={6} value={form.password} onChange={(e) => update('password', e.target.value)} />
+          <input
+            required
+            type="password"
+            autoComplete="new-password"
+            value={form.password}
+            onChange={(e) => update('password', e.target.value)}
+          />
         </label>
+        <ul className="password-rules" aria-live="polite">
+          {rules.map((rule) => (
+            <li key={rule.id} className={rule.ok ? 'ok' : ''}>
+              {rule.ok ? '✓' : '·'} {rule.label}
+            </li>
+          ))}
+        </ul>
         <label>
-          DNI
-          <input required value={form.dni} onChange={(e) => update('dni', e.target.value)} />
+          Repetí la contraseña
+          <input
+            required
+            type="password"
+            autoComplete="new-password"
+            value={form.confirmPassword}
+            onChange={(e) => update('confirmPassword', e.target.value)}
+          />
         </label>
-        <label>
-          Teléfono
-          <input required value={form.phone} onChange={(e) => update('phone', e.target.value)} />
-        </label>
-        <label>
-          Fecha de nacimiento
-          <input required type="date" value={form.birthDate} onChange={(e) => update('birthDate', e.target.value)} />
-        </label>
+        <TurnstileWidget ref={turnstileRef} onToken={setCaptchaToken} />
         {error && <p className="error-text">{error}</p>}
-        {info && <p className="info-text">{info}</p>}
-        <button className="btn-primary" type="submit" disabled={loading}>
-          {loading ? 'Creando cuenta...' : 'Ingresar a +1'}
+        <button className="btn-primary btn-block" type="submit" disabled={loading}>
+          {loading ? 'Creando cuenta...' : 'Crear cuenta'}
         </button>
       </form>
+      <GoogleSignInButton />
       <p className="muted">¿Ya tenés cuenta? <Link to="/login">Ingresá</Link></p>
     </div>
   );

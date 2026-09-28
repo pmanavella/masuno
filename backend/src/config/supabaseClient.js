@@ -8,7 +8,8 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
   throw new Error('Faltan variables de Supabase en backend/.env');
 }
 
-// Bypasea RLS. Reservado para operaciones administrativas futuras (no se usa en el scope actual).
+// Bypasea RLS. Solo para las funciones reservadas a service_role (verificación de identidad,
+// límite de intentos, ticket de ARCA). La service role key nunca sale del backend.
 export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Cliente sin sesión, usado solo para validar tokens de usuario (auth.getUser).

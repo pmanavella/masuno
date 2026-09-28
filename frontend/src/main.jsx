@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
+import { NotificationsProvider } from './context/NotificationsContext.jsx';
 import './styles/global.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -11,7 +12,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
-          <App />
+          <NotificationsProvider>
+            <App />
+          </NotificationsProvider>
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>

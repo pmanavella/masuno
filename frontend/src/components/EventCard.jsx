@@ -1,4 +1,6 @@
-function catClass(cat) {
+import { Link } from 'react-router-dom';
+
+export function catClass(cat) {
   return 'cat-' + cat.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '');
 }
 
@@ -11,7 +13,7 @@ export function EventCard({ event }) {
   const timeLabel = start.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="event-card">
+    <Link to={`/eventos/${event.id}`} className="event-card">
       <div
         className={`thumb ${catClass(event.category)}`}
         style={event.image_url ? { backgroundImage: `url(${event.image_url})` } : undefined}
@@ -21,7 +23,7 @@ export function EventCard({ event }) {
           <span className="avatar-xs">{event.organizer_initials}</span>
           <span>{event.organizer_name} organiza</span>
         </div>
-        <span className="badge-spots">Faltan {spotsLeft} cupos</span>
+        <span className="badge-spots">{spotsLeft > 0 ? `Faltan ${spotsLeft} cupos` : 'Completo'}</span>
       </div>
       <h4>{event.title}</h4>
       <div className="event-meta">📍 {event.city} · {event.category}</div>
@@ -36,6 +38,6 @@ export function EventCard({ event }) {
           <span>Organizador nuevo</span>
         )}
       </div>
-    </div>
+    </Link>
   );
 }

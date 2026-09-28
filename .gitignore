@@ -7,6 +7,12 @@ node_modules/
 .env.*
 !.env.example
 
+# Certificado y clave privada de ARCA (nunca subir)
+backend/certs/
+*.key
+*.pem
+*.crt
+
 # Build
 dist/
 build/

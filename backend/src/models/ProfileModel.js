@@ -12,17 +12,15 @@ export const ProfileModel = {
     return data;
   },
 
+  // La base solo permite al usuario actualizar phone y updated_at (permisos por columna).
   async update(accessToken, userId, fields) {
     const supabase = supabaseForUser(accessToken);
-    // TODO(verificación futura): dni y phone se guardan tal cual los tipea el usuario, sin validar.
-    // Implementar verificación real de teléfono por SMS (ej. Twilio) y de DNI antes de producción.
+    // TODO(verificación futura): el teléfono se guarda tal cual lo tipea el usuario, sin validar.
+    // Implementar verificación real por SMS (ej. Twilio) antes de producción.
     const { data, error } = await supabase
       .from('profiles')
       .update({
-        full_name: fields.fullName,
         phone: fields.phone,
-        dni: fields.dni,
-        birth_date: fields.birthDate,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)

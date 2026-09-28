@@ -1,6 +1,7 @@
 import { formatDateChip } from '../lib/dateFilters.js';
+import { genderLabel } from '../lib/genders.js';
 
-const AGE_MIN = 16;
+const AGE_MIN = 18;
 const AGE_MAX = 99;
 const DEFAULT_CITY = 'Córdoba Capital';
 
@@ -12,7 +13,7 @@ function buildActiveLabels(filters) {
   const dateLabel = formatDateChip(filters.date);
   if (dateLabel) labels.push(dateLabel);
   if (filters.ageMin || filters.ageMax) labels.push(`${filters.ageMin || AGE_MIN}–${filters.ageMax || AGE_MAX}`);
-  if (filters.gender) labels.push(filters.gender);
+  if (filters.gender) labels.push(genderLabel(filters.gender));
   return labels;
 }
 

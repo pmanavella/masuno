@@ -21,11 +21,11 @@ const CATEGORY_ICONS = {
 // mejor que agregar un 4to chip. El valor sigue existiendo en el backend igual.
 const GENDER_OPTIONS = [
   { value: '', label: '👥 Cualquiera' },
-  { value: 'Femenino', label: '♀ Mujer' },
-  { value: 'Masculino', label: '♂ Hombre' },
+  { value: 'femenino', label: '♀ Mujer' },
+  { value: 'masculino', label: '♂ Hombre' },
 ];
 
-const AGE_MIN = 16;
+const AGE_MIN = 18;
 const AGE_MAX = 99;
 const DEFAULT_CITY = 'Córdoba Capital';
 const DRAG_CLOSE_THRESHOLD = 110; // px arrastrados hacia abajo para cerrar el sheet

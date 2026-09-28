@@ -2,23 +2,27 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/apiClient.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { genderLabel } from '../lib/genders.js';
 
-function ageFromDob(dobStr) {
-  if (!dobStr) return null;
-  const d = new Date(dobStr);
-  const now = new Date();
-  let age = now.getFullYear() - d.getFullYear();
-  const m = now.getMonth() - d.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
-  return age;
+// 'YYYY-MM-DD' -> 'DD/MM/YYYY' sin pasar por Date (evita correrse un día por zona horaria).
+function formatDate(isoDate) {
+  if (!isoDate) return '—';
+  const [y, m, d] = isoDate.split('-');
+  return `${d}/${m}/${y}`;
 }
 
+function formatDateTime(isoDateTime) {
+  return new Date(isoDateTime).toLocaleDateString('es-AR');
+}
+
+// Perfil propio. Los datos de identidad vienen de la verificación (enmascarados) y no se
+// editan; lo único editable es el teléfono.
 export function ProfilePage() {
-  const { user, signOut } = useAuth();
+  const { user, identity, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ fullName: '', phone: '', dni: '', birthDate: '' });
+  const [phone, setPhone] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,12 +30,7 @@ export function ProfilePage() {
     api.getProfile()
       .then((data) => {
         setProfile(data);
-        setForm({
-          fullName: data.full_name || '',
-          phone: data.phone || '',
-          dni: data.dni || '',
-          birthDate: data.birth_date || '',
-        });
+        setPhone(data.phone || '');
       })
       .catch((err) => setError(err.message));
   }, []);
@@ -41,7 +40,7 @@ export function ProfilePage() {
     setSaving(true);
     setError('');
     try {
-      const updated = await api.updateProfile(form);
+      const updated = await api.updatePhone(phone.trim());
       setProfile(updated);
       setEditing(false);
     } catch (err) {
@@ -57,56 +56,63 @@ export function ProfilePage() {
   }
 
   if (error && !profile) return <div className="card"><p className="error-text">{error}</p></div>;
-  if (!profile) return <div className="card">Cargando perfil...</div>;
+  if (!profile || !identity) return <div className="card">Cargando perfil...</div>;
 
-  const initials = (profile.full_name || user.email)
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-  const age = ageFromDob(profile.birth_date);
+  const initials = `${identity.first_name[0]}${identity.last_name[0]}`.toUpperCase();
 
   return (
     <div className="profile-hero">
       <div className="avatar-lg">{initials}</div>
-      <h1>{profile.full_name || 'Sin nombre'}</h1>
-      <p className="muted">{age !== null ? `${age} años · Córdoba` : 'Córdoba'}</p>
+      <h1>{identity.first_name} {identity.last_name}</h1>
+      <p className="muted">{identity.age} años · Córdoba</p>
+      <p className="verified-badge">✓ Identidad verificada</p>
 
-      {!editing ? (
-        <div className="info-list">
-          <div className="info-row"><span>Email</span><span>{user.email}</span></div>
-          <div className="info-row"><span>DNI</span><span>{profile.dni || '—'}</span></div>
-          <div className="info-row"><span>Teléfono</span><span>{profile.phone || '—'}</span></div>
-          <div className="info-row"><span>Fecha de nacimiento</span><span>{profile.birth_date || '—'}</span></div>
-          <button className="btn-secondary" onClick={() => setEditing(true)}>Editar perfil</button>
-          <button className="btn-ghost" onClick={handleLogout}>Cerrar sesión</button>
-        </div>
-      ) : (
-        <form className="card" onSubmit={handleSave}>
-          <label>
-            Nombre y apellido
-            <input value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} />
-          </label>
-          <label>
-            DNI
-            <input value={form.dni} onChange={(e) => setForm((f) => ({ ...f, dni: e.target.value }))} />
-          </label>
-          <label>
-            Teléfono
-            <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
-          </label>
-          <label>
-            Fecha de nacimiento
-            <input type="date" value={form.birthDate} onChange={(e) => setForm((f) => ({ ...f, birthDate: e.target.value }))} />
-          </label>
-          {error && <p className="error-text">{error}</p>}
-          <div className="cta-row">
-            <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</button>
-            <button className="btn-ghost" type="button" onClick={() => setEditing(false)}>Cancelar</button>
+      <div className="info-list">
+        <div className="info-row"><span>Email</span><span>{user.email}</span></div>
+        <div className="info-row"><span>DNI</span><span>{identity.dni_masked}</span></div>
+        <div className="info-row"><span>CUIL</span><span>{identity.cuil_masked}</span></div>
+        <div className="info-row"><span>Fecha de nacimiento</span><span>{formatDate(identity.birth_date)}</span></div>
+        <div className="info-row"><span>Género</span><span>{genderLabel(identity.gender)}</span></div>
+        <div className="info-row"><span>Verificada el</span><span>{formatDateTime(identity.verified_at)}</span></div>
+
+        {!editing ? (
+          <div className="info-row">
+            <span>Teléfono</span>
+            <span className="phone-value">
+              {profile.phone || '—'}
+              <button className="btn-ghost" type="button" onClick={() => setEditing(true)}>Editar</button>
+            </span>
           </div>
-        </form>
-      )}
+        ) : (
+          <form className="phone-form" onSubmit={handleSave}>
+            <label>
+              Teléfono
+              <input type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </label>
+            {error && <p className="error-text">{error}</p>}
+            <div className="cta-row">
+              <button className="btn-primary" type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Guardar'}</button>
+              <button
+                className="btn-ghost"
+                type="button"
+                onClick={() => {
+                  setPhone(profile.phone || '');
+                  setError('');
+                  setEditing(false);
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      <p className="privacy-note on-dark">
+        🔒 Tu DNI, CUIL y fecha de nacimiento solo los ves vos. Los demás ven "{identity.first_name.split(' ')[0]}{' '}
+        {identity.last_name[0].toUpperCase()}.".
+      </p>
+      <button className="btn-ghost on-dark" type="button" onClick={handleLogout}>Cerrar sesión</button>
     </div>
   );
 }

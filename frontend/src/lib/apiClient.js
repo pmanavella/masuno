@@ -12,14 +12,17 @@ async function request(path, options = {}) {
   const res = await fetch(`${API_URL}/api${path}`, { ...options, headers });
   const body = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new Error(body?.error || 'Error de red');
+    // code: código estable del backend (p. ej. 'underage', 'dni_taken'), si lo hay.
+    throw Object.assign(new Error(body?.error || 'Error de red'), { code: body?.code, status: res.status });
   }
   return body;
 }
 
 export const api = {
   getProfile: () => request('/profile'),
-  updateProfile: (fields) => request('/profile', { method: 'PUT', body: JSON.stringify(fields) }),
+  updatePhone: (phone) => request('/profile', { method: 'PUT', body: JSON.stringify({ phone }) }),
+  getIdentity: () => request('/identity'),
+  verifyIdentity: (fields) => request('/identity/verify', { method: 'POST', body: JSON.stringify(fields) }),
   getEvents: (filters = {}) => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
@@ -32,4 +35,14 @@ export const api = {
     return request(`/events?${params.toString()}`);
   },
   getCities: () => request('/events/cities'),
+  getEvent: (id) => request(`/events/${id}`),
+  createEvent: (fields) => request('/events', { method: 'POST', body: JSON.stringify(fields) }),
+  getOrganizedEvents: () => request('/events/organized'),
+  requestToJoin: (eventId) => request(`/events/${eventId}/requests`, { method: 'POST' }),
+  getMyRequests: () => request('/requests/mine'),
+  respondToRequest: (requestId, accept) =>
+    request(`/requests/${requestId}/respond`, { method: 'POST', body: JSON.stringify({ accept }) }),
+  cancelRequest: (requestId) => request(`/requests/${requestId}/cancel`, { method: 'POST' }),
+  getNotifications: () => request('/notifications'),
+  markNotificationsRead: () => request('/notifications/read', { method: 'POST' }),
 };

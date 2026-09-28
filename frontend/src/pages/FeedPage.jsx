@@ -3,11 +3,7 @@ import { api } from '../lib/apiClient.js';
 import { EventCard } from '../components/EventCard.jsx';
 import { FilterIsland } from '../components/FilterIsland.jsx';
 import { FiltersSheet } from '../components/FiltersSheet.jsx';
-
-const CATEGORIES = [
-  'Deportes', 'Social', 'Aire libre', 'Cultura', 'Networking',
-  'Música', 'Gastronomía', 'Vida nocturna', 'Juegos', 'Bienestar',
-];
+import { CATEGORIES } from '../lib/events.js';
 
 export function FeedPage() {
   const [filters, setFilters] = useState({

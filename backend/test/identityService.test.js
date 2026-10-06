@@ -1,13 +1,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  normalizeDni,
-  namesMatch,
-  ageOn,
-  isValidIsoDate,
-  verifyIdentity,
-} from '../src/services/identityService.js';
-import { MockArcaClient } from '../src/services/arca/MockArcaClient.js';
+import { namesMatch, verifyIdentity } from '../src/services/identityService.js';
+import { normalizeDni, ageOn, isValidIsoDate } from '../src/services/declaredIdentity.js';
+import { MockArcaClient } from './fixtures/MockArcaClient.js';
 import { ArcaClient } from '../src/services/arca/ArcaClient.js';
 
 function fakeModel({ verified = false, attemptsOk = true, dniAvailable = true } = {}) {
@@ -39,7 +34,7 @@ const lucia = {
   gender: 'femenino',
 };
 
-async function verify(body, { model = fakeModel(), arca = new MockArcaClient({ nodeEnv: 'test' }) } = {}) {
+async function verify(body, { model = fakeModel(), arca = new MockArcaClient() } = {}) {
   const result = await verifyIdentity({ userId: 'u1', accessToken: 't', body }, { arca, model });
   return { result, model };
 }
@@ -86,6 +81,7 @@ describe('normalización y comparación', () => {
   });
 });
 
+// Flujo ARCA de la etapa futura, probado con el mock de test/fixtures (no existe en el runtime).
 describe('verifyIdentity con ARCA mock', () => {
   test('adulta válida: guarda CUIL de ARCA y nombre como lo escribió', async () => {
     const { result, model } = await verify(lucia);
@@ -184,11 +180,5 @@ describe('verifyIdentity con respuestas de ARCA poco comunes', () => {
     for (const override of [{ keyStatus: 'INACTIVO' }, { personType: 'JURIDICA' }, { deceased: true }]) {
       await expectCode(verify(lucia, { arca: new FixedArca([{ ...base, cuil: '27301234568', ...override }]) }), 'identity_mismatch');
     }
-  });
-});
-
-describe('modo mock', () => {
-  test('se niega a correr con NODE_ENV=production', () => {
-    assert.throws(() => new MockArcaClient({ nodeEnv: 'production' }), /no está permitido/);
   });
 });

@@ -2,10 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { allowedOrigins } from './config/origins.js';
 
 const app = express();
-
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(',');
 
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());

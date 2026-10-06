@@ -1,9 +1,16 @@
 import { HttpError } from '../utils/HttpError.js';
 import { ArcaUnavailableError } from './arca/index.js';
+import {
+  MIN_AGE,
+  PERSON_GENDERS,
+  ageOn,
+  cleanName,
+  isValidIsoDate,
+  normalizeDni,
+  todayInCordoba,
+} from './declaredIdentity.js';
 
-export const GENDERS = ['masculino', 'femenino', 'no_binario'];
-export const MIN_AGE = 18;
-const TIME_ZONE = 'America/Argentina/Cordoba';
+// Verificación de identidad contra ARCA (etapa futura). Solo se usa con ARCA_ENABLED=true.
 
 // Códigos que puede devolver POST /api/identity/verify. Los de mismatch no dicen qué campo
 // falló, a propósito: el formulario no tiene que servir para averiguar datos de terceros.
@@ -22,14 +29,6 @@ const ERRORS = {
 export function identityError(code) {
   const [status, message] = ERRORS[code];
   return new HttpError(status, code, message);
-}
-
-// DNI sin puntos, espacios ni ceros a la izquierda; null si no es un DNI válido.
-export function normalizeDni(raw) {
-  const digits = String(raw ?? '').replace(/[\s.]/g, '');
-  if (!/^\d{7,9}$/.test(digits)) return null;
-  const dni = digits.replace(/^0+/, '');
-  return /^[1-9]\d{6,7}$/.test(dni) ? dni : null;
 }
 
 // Mayúsculas, sin tildes ni signos: "Lucía  Belén" -> ['LUCIA', 'BELEN'], "Muñoz" -> ['MUNOZ'].
@@ -52,27 +51,6 @@ export function namesMatch(input, official) {
   return inputTokens.length > 0 && inputTokens.every((token) => officialTokens.has(token));
 }
 
-export function isValidIsoDate(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return false;
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
-}
-
-export function todayInCordoba(now = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE }).format(now);
-}
-
-// Años cumplidos a una fecha (ambas 'YYYY-MM-DD'), igual que private.age_years en la base.
-export function ageOn(birthDate, onDate) {
-  const [by, bm, bd] = birthDate.split('-').map(Number);
-  const [y, m, d] = onDate.split('-').map(Number);
-  return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0);
-}
-
-function cleanName(value) {
-  return String(value ?? '').trim().replace(/\s+/g, ' ');
-}
-
 export function validateInput(body, now = new Date()) {
   const dni = normalizeDni(body?.dni);
   const firstName = cleanName(body?.firstName);
@@ -85,7 +63,7 @@ export function validateInput(body, now = new Date()) {
     nameTokens(firstName).length > 0 && firstName.length <= 100 &&
     nameTokens(lastName).length > 0 && lastName.length <= 100 &&
     isValidIsoDate(birthDate) &&
-    GENDERS.includes(gender);
+    PERSON_GENDERS.includes(gender);
   if (!valid) throw identityError('invalid_input');
 
   const today = todayInCordoba(now);
@@ -96,7 +74,7 @@ export function validateInput(body, now = new Date()) {
 }
 
 // deps: { arca, model, maxAttempts, attemptWindowMinutes, now }
-// model: isVerified(token), consumeAttempt(userId, max, window), isDniAvailable(dni),
+// model: isVerified(token), consumeAttempt(userId, max, window), isDniAvailable(dni, userId),
 //        save(identity), getMine(token)
 export async function verifyIdentity({ userId, accessToken, body }, deps) {
   const { arca, model, maxAttempts = 5, attemptWindowMinutes = 1440, now = new Date() } = deps;
@@ -111,7 +89,7 @@ export async function verifyIdentity({ userId, accessToken, body }, deps) {
     throw identityError('rate_limited');
   }
 
-  if (!(await model.isDniAvailable(input.dni))) throw identityError('dni_taken');
+  if (!(await model.isDniAvailable(input.dni, userId))) throw identityError('dni_taken');
 
   let persons;
   try {

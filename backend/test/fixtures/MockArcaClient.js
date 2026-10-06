@@ -1,5 +1,7 @@
-import { ArcaClient, ArcaUnavailableError } from './ArcaClient.js';
+import { ArcaClient, ArcaUnavailableError } from '../../src/services/arca/ArcaClient.js';
 
+// SOLO PARA TESTS. No existe en el runtime: el backend no tiene modo mock ni fallback.
+//
 // Fixtures locales (datos inventados, CUIL con dígito verificador válido):
 //   30123456  adulta válida: Lucía Belén Martínez, 10/03/1995
 //   45111222  17 años (se calcula desde hoy, así nunca cumple 18): Tomás Giménez
@@ -29,13 +31,6 @@ const UNAVAILABLE_DNI = '99999999';
 
 export class MockArcaClient extends ArcaClient {
   source = 'mock';
-
-  constructor({ nodeEnv = process.env.NODE_ENV } = {}) {
-    super();
-    if (nodeEnv === 'production') {
-      throw new Error('ARCA_MODE=mock no está permitido con NODE_ENV=production');
-    }
-  }
 
   async getIdPersonaListByDocumento(dni) {
     if (dni === UNAVAILABLE_DNI) {

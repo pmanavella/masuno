@@ -1,10 +1,17 @@
 import { Router } from 'express';
-import { requireAuth } from '../middleware/authMiddleware.js';
-import { getMyIdentity, verifyMyIdentity } from '../controllers/identityController.js';
+import { requireAuth, requireConfirmedEmail } from '../middleware/authMiddleware.js';
+import { createIdentityController } from '../controllers/identityController.js';
+import { IdentityModel } from '../models/IdentityModel.js';
+import { createArcaClient } from '../services/arca/index.js';
 
-const router = Router();
+// Verificación de identidad contra ARCA. Solo se monta con ARCA_ENABLED=true (routes/index.js).
+// El cliente se crea al montar: si falta configuración, el backend no arranca.
+export function createIdentityRoutes() {
+  const arca = createArcaClient({ ticketStore: IdentityModel.arcaTicketStore });
+  const { getMyIdentity, verifyMyIdentity } = createIdentityController({ arca });
 
-router.get('/', requireAuth, getMyIdentity);
-router.post('/verify', requireAuth, verifyMyIdentity);
-
-export default router;
+  const router = Router();
+  router.get('/', requireAuth, getMyIdentity);
+  router.post('/verify', requireAuth, requireConfirmedEmail, verifyMyIdentity);
+  return router;
+}

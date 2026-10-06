@@ -13,16 +13,16 @@ async function request(path, options = {}) {
   const body = await res.json().catch(() => null);
   if (!res.ok) {
     // code: código estable del backend (p. ej. 'underage', 'dni_taken'), si lo hay.
-    throw Object.assign(new Error(body?.error || 'Error de red'), { code: body?.code, status: res.status });
+    // field: campo del formulario al que corresponde el error, si lo hay.
+    throw Object.assign(new Error(body?.error || 'Error de red'), { code: body?.code, field: body?.field, status: res.status });
   }
   return body;
 }
 
 export const api = {
+  register: (fields) => request('/auth/register', { method: 'POST', body: JSON.stringify(fields) }),
   getProfile: () => request('/profile'),
   updatePhone: (phone) => request('/profile', { method: 'PUT', body: JSON.stringify({ phone }) }),
-  getIdentity: () => request('/identity'),
-  verifyIdentity: (fields) => request('/identity/verify', { method: 'POST', body: JSON.stringify(fields) }),
   getEvents: (filters = {}) => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {

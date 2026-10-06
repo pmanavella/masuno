@@ -1,17 +1,20 @@
 import { supabaseAdmin, supabaseForUser } from '../config/supabaseClient.js';
 import { identityError } from '../services/identityService.js';
 
+// Verificación de identidad contra ARCA (etapa futura). Solo se usa con ARCA_ENABLED=true.
+
 // Errores que save_verified_identity levanta con un código estable en el mensaje.
 const DB_ERROR_CODES = ['already_verified', 'dni_taken', 'underage', 'invalid_birth_date'];
 
 export const IdentityModel = {
+  // Identidad verificada por ARCA (is_verified() solo cuenta source = 'arca').
   async isVerified(accessToken) {
     const { data, error } = await supabaseForUser(accessToken).rpc('is_verified');
     if (error) throw error;
     return data === true;
   },
 
-  // Datos propios enmascarados (DNI/CUIL), o null si todavía no verificó.
+  // Identidad verificada propia, enmascarada (DNI/CUIL), o null si no hay.
   async getMine(accessToken) {
     const { data, error } = await supabaseForUser(accessToken).rpc('get_my_identity');
     if (error) throw error;
@@ -30,8 +33,12 @@ export const IdentityModel = {
     return data === true;
   },
 
-  async isDniAvailable(dni) {
-    const { data, error } = await supabaseAdmin.rpc('identity_dni_available', { p_dni: dni });
+  // Libre en datos declarados e identidades verificadas, sin contar los del propio usuario.
+  async isDniAvailable(dni, userId) {
+    const { data, error } = await supabaseAdmin.rpc('identity_dni_available', {
+      p_dni: dni,
+      p_exclude_user_id: userId,
+    });
     if (error) throw error;
     return data === true;
   },

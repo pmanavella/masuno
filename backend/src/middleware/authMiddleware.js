@@ -1,4 +1,4 @@
-import { supabaseAnon, supabaseForUser } from '../config/supabaseClient.js';
+import { supabaseAnon } from '../config/supabaseClient.js';
 
 function bearerToken(req) {
   const header = req.headers.authorization || '';
@@ -36,12 +36,16 @@ export async function optionalAuth(req, res, next) {
   next();
 }
 
-// Va después de requireAuth. Una cuenta sin identidad verificada solo puede verificarse.
-export async function requireVerified(req, res, next) {
-  const { data, error } = await supabaseForUser(req.accessToken).rpc('is_verified');
-  if (error) return next(error);
-  if (data !== true) {
-    return res.status(403).json({ error: 'Tenés que verificar tu identidad primero.', code: 'not_verified' });
+// Va después de requireAuth. En el MVP la única verificación obligatoria es el email confirmado.
+// Se lee de email_confirmed_at del usuario que devuelve Supabase Auth (auth.getUser valida el
+// token contra el servidor), nunca de algo que mande el cliente. La identidad ARCA no participa.
+// La base lo vuelve a exigir (is_account_enabled / can_join_event / respond_to_request).
+export function requireConfirmedEmail(req, res, next) {
+  if (!req.user?.email_confirmed_at) {
+    return res.status(403).json({
+      error: 'Confirmá tu email para usar esta función. Revisá tu bandeja de entrada.',
+      code: 'email_not_confirmed',
+    });
   }
   next();
 }

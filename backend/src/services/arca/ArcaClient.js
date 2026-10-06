@@ -13,7 +13,7 @@ export class ArcaUnavailableError extends Error {
 }
 
 export class ArcaClient {
-  // 'mock' | 'arca': se guarda como origen de la verificación en private.identities.
+  // Origen de la verificación en private.identities. La base solo acepta 'arca' para filas nuevas.
   source = 'arca';
 
   // Devuelve los CUIL/CUIT asociados a un número de documento ([] si no hay ninguno).

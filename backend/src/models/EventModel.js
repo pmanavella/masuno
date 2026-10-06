@@ -52,21 +52,22 @@ export const EventModel = {
     return data;
   },
 
-  // RLS exige usuario verificado, organizer_id propio y fecha futura.
+  // RLS exige cuenta habilitada (email confirmado + datos declarados), organizer_id propio y
+  // fecha futura. El email ya lo controló requireConfirmedEmail.
   async create(fields, userId, accessToken) {
     const { data, error } = await supabaseForUser(accessToken)
       .from('events')
       .insert({
         ...fields,
         organizer_id: userId,
-        // Los pisa el trigger de la base con el nombre verificado ("Lucía M."); van porque son NOT NULL.
+        // Los pisa el trigger de la base con el nombre declarado ("Lucía M."); van porque son NOT NULL.
         organizer_name: '-',
         organizer_initials: '-',
       })
       .select()
       .single();
     if (error) {
-      if (error.code === '42501') throw eventError('not_verified');
+      if (error.code === '42501') throw eventError('profile_incomplete');
       if (error.code === '23514') throw eventError('invalid_input');
       throw error;
     }

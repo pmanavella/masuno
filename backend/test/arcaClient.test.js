@@ -8,6 +8,7 @@ import forge from 'node-forge';
 import { RealArcaClient } from '../src/services/arca/RealArcaClient.js';
 import { ArcaUnavailableError } from '../src/services/arca/ArcaClient.js';
 import { createArcaClient } from '../src/services/arca/index.js';
+import { isArcaEnabled } from '../src/config/arca.js';
 
 // Certificado autofirmado solo para las pruebas (ARCA real no se puede probar sin certificado).
 let certPem;
@@ -172,9 +173,36 @@ describe('RealArcaClient', () => {
 });
 
 describe('createArcaClient', () => {
-  test('exige ARCA_MODE y bloquea mock en producción', () => {
-    assert.throws(() => createArcaClient({ env: {} }), /ARCA_MODE/);
-    assert.throws(() => createArcaClient({ env: { ARCA_MODE: 'mock', NODE_ENV: 'production' } }), /no está permitido/);
-    assert.equal(createArcaClient({ env: { ARCA_MODE: 'mock', NODE_ENV: 'development' } }).source, 'mock');
+  function writePems() {
+    const dir = mkdtempSync(join(tmpdir(), 'plus1-arca-'));
+    writeFileSync(join(dir, 'arca.crt'), certPem);
+    writeFileSync(join(dir, 'arca.key'), keyPem);
+    return { ARCA_CERT_PATH: join(dir, 'arca.crt'), ARCA_KEY_PATH: join(dir, 'arca.key') };
+  }
+
+  test('con ARCA_ENABLED=false (o sin definir) no crea ningún cliente', () => {
+    assert.throws(() => createArcaClient({ env: {} }), /deshabilitado/);
+    assert.throws(() => createArcaClient({ env: { ARCA_ENABLED: 'false', ARCA_CUIT: '20123456789', ...writePems() } }), /deshabilitado/);
+  });
+
+  test('ARCA_MODE=mock ya no existe: nunca devuelve un mock', () => {
+    assert.throws(() => createArcaClient({ env: { ARCA_MODE: 'mock' } }), /deshabilitado/);
+    // Habilitado pero sin certificados: falla, no cae a un mock.
+    assert.throws(
+      () => createArcaClient({ env: { ARCA_ENABLED: 'true', ARCA_MODE: 'mock' } }),
+      /faltan variables: ARCA_CUIT, ARCA_CERT_PATH, ARCA_KEY_PATH/
+    );
+  });
+
+  test('con ARCA_ENABLED=true y configuración completa devuelve RealArcaClient', () => {
+    const arca = createArcaClient({ env: { ARCA_ENABLED: 'true', ARCA_CUIT: '20123456789', ...writePems() } });
+    assert.ok(arca instanceof RealArcaClient);
+    assert.equal(arca.source, 'arca');
+  });
+
+  test('ARCA_ENABLED con un valor inválido no se interpreta en silencio', () => {
+    assert.throws(() => isArcaEnabled({ ARCA_ENABLED: 'si' }), /ARCA_ENABLED inválido/);
+    assert.equal(isArcaEnabled({ ARCA_ENABLED: ' TRUE ' }), true);
+    assert.equal(isArcaEnabled({}), false);
   });
 });

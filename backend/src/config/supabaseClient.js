@@ -15,6 +15,14 @@ export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KE
 // Cliente sin sesión, usado solo para validar tokens de usuario (auth.getUser).
 export const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Cliente nuevo y sin sesión persistida para operaciones de Auth del lado del servidor (registro):
+// una sesión nunca queda guardada en un cliente compartido.
+export function supabaseAuthClient() {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+}
+
 // Cliente scoped al usuario autenticado: las consultas respetan RLS como ese usuario.
 export function supabaseForUser(accessToken) {
   return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

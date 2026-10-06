@@ -7,17 +7,17 @@ import { useToast } from './ToastContext.jsx';
 
 const NotificationsContext = createContext(null);
 
-// Avisos del usuario verificado: contador de no leídos y suscripción a Realtime.
+// Avisos de la cuenta habilitada (email confirmado): contador de no leídos y suscripción a Realtime.
 // Realtime aplica RLS, así que el canal solo recibe los avisos propios; el filtro por
 // user_id es para no procesar de más.
 export function NotificationsProvider({ children }) {
-  const { user, identityStatus } = useAuth();
+  const { user, emailConfirmed } = useAuth();
   const showToast = useToast();
   const [unread, setUnread] = useState(0);
   // Cambia con cada aviso nuevo: las pantallas lo usan para recargar (solicitudes, estados).
   const [version, setVersion] = useState(0);
   const userId = user?.id ?? null;
-  const enabled = userId !== null && identityStatus === 'verified';
+  const enabled = userId !== null && emailConfirmed;
 
   const refresh = useCallback(async () => {
     if (!enabled) return;

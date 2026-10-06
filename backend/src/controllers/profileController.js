@@ -1,15 +1,20 @@
 import { ProfileModel } from '../models/ProfileModel.js';
 
+// declared: datos que el usuario declaró al registrarse (no verificados oficialmente).
 export async function getMyProfile(req, res, next) {
   try {
-    const profile = await ProfileModel.getById(req.accessToken, req.user.id);
-    res.json({ ...profile, email: req.user.email });
+    const [profile, declared] = await Promise.all([
+      ProfileModel.getById(req.accessToken, req.user.id),
+      ProfileModel.getDeclaredIdentity(req.accessToken),
+    ]);
+    res.json({ ...profile, email: req.user.email, emailConfirmed: Boolean(req.user.email_confirmed_at), declared });
   } catch (err) {
     next(err);
   }
 }
 
-// Solo el teléfono es editable: nombre, DNI y fecha de nacimiento salen de la verificación.
+// Solo el teléfono es editable: nombre, DNI, fecha de nacimiento y género se declaran al
+// registrarse y no se cambian desde la app.
 export async function updateMyProfile(req, res, next) {
   try {
     const { phone } = req.body;

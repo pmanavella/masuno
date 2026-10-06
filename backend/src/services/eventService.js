@@ -14,7 +14,11 @@ const MAX_SPOTS = 100;
 // El mismo mensaje se usa para explicar por qué no se puede pedir unirse.
 const ERRORS = {
   invalid_input: [400, 'Revisá los datos del evento.'],
-  not_verified: [403, 'Tenés que verificar tu identidad primero.'],
+  not_authenticated: [401, 'Ingresá para continuar.'],
+  email_not_confirmed: [403, 'Confirmá tu email para continuar. Revisá tu bandeja de entrada.'],
+  profile_incomplete: [403, 'Tu cuenta no tiene cargados tus datos personales. Escribinos para completarlos.'],
+  // Lo devolvía la base antes de 20261006-mvp-verificacion-email.sql (exigía identidad ARCA).
+  not_verified: [403, 'Tu cuenta todavía no está habilitada.'],
   not_found: [404, 'No encontramos ese evento o solicitud.'],
   own_event: [409, 'Es tu evento.'],
   already_requested: [409, 'Ya pediste unirte a este evento.'],

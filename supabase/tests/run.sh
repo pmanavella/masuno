@@ -1,14 +1,16 @@
 #!/bin/zsh
 # Levanta un Postgres 15 descartable en Docker, aplica todas las migraciones en el orden en que
-# se ejecutan en Supabase y corre las pruebas. Uso: ./supabase/tests/run.sh
+# se ejecutan en Supabase, cada una seguida de sus pruebas. Uso: ./supabase/tests/run.sh
 # Requiere Docker Desktop abierto y psql (brew install libpq).
 set -u
 
 ROOT=${0:A:h:h:h}
 cd $ROOT
 
-# Mismo orden que en Supabase. Agregar cada migración nueva al final.
-MIGRATIONS=(
+# Mismo orden que en Supabase. Cada migración va seguida de sus pruebas (si tiene): así cada
+# prueba ve la base como quedó en ese momento, y la migración siguiente corre sobre esos datos
+# (como en producción). Agregar cada migración nueva al final.
+STEPS=(
   supabase/20260914-schema-inicial.sql
   supabase/20260914-rls-policies.sql
   supabase/20260914-seed-events.sql
@@ -16,17 +18,17 @@ MIGRATIONS=(
   supabase/20260914-seed-event-images.sql
   supabase/20260914-expand-categories.sql
   supabase/20260927-identidad-verificada.sql
-  supabase/20260927-solicitudes-y-avisos.sql
-  supabase/20260927-cancelar-solicitudes.sql
-  supabase/20260927-backend-identidad.sql
-)
-
-# Las pruebas comparten estado (usuarios y eventos), así que corren en este orden.
-TESTS=(
   supabase/tests/20260927-identidad-verificada.sql
+  supabase/20260927-solicitudes-y-avisos.sql
   supabase/tests/20260927-solicitudes-y-avisos.sql
+  supabase/20260927-cancelar-solicitudes.sql
   supabase/tests/20260927-cancelar-solicitudes.sql
+  supabase/20260927-backend-identidad.sql
   supabase/tests/20260927-backend-identidad.sql
+  supabase/20261006-mvp-verificacion-email.sql
+  # Dos veces a propósito: comprueba que es idempotente.
+  supabase/20261006-mvp-verificacion-email.sql
+  supabase/tests/20261006-mvp-verificacion-email.sql
 )
 
 CONTAINER=plus1-sql-tests
@@ -43,7 +45,7 @@ for i in {1..60}; do
   sleep 1
 done
 
-for f in supabase/tests/_stub-supabase.sql $MIGRATIONS $TESTS; do
+for f in supabase/tests/_stub-supabase.sql $STEPS; do
   echo ">> $f"
   $PSQL -h localhost -p $PORT -U postgres -v ON_ERROR_STOP=1 -q -t -f $f 2>&1 \
     | grep -vE '^\s*$|wal_level|HINT:  Set wal_level' \

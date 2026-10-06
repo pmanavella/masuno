@@ -12,6 +12,8 @@ backend/certs/
 *.key
 *.pem
 *.crt
+*.p12
+*.pfx
 
 # Build
 dist/

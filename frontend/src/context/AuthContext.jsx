@@ -1,19 +1,15 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient.js';
-import { api } from '../lib/apiClient.js';
 
 const AuthContext = createContext(null);
 
-// Después de confirmar el email o entrar con Google, la cuenta nueva va directo a verificarse.
-const AFTER_AUTH_URL = () => `${window.location.origin}/verificacion`;
+// Después de confirmar el email o entrar con Google se vuelve al inicio.
+const AFTER_AUTH_URL = () => `${window.location.origin}/`;
 
+// El registro va por el backend (api.register). Acá solo sesión, login y logout.
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  // identityStatus: 'none' (sin sesión) | 'loading' | 'verified' | 'unverified' | 'error'
-  const [identityStatus, setIdentityStatus] = useState('none');
-  const [identity, setIdentity] = useState(null);
-  const requestIdRef = useRef(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -26,47 +22,14 @@ export function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  const userId = session?.user?.id ?? null;
-
-  const refreshIdentity = useCallback(async () => {
-    const requestId = ++requestIdRef.current;
-    if (!userId) {
-      setIdentity(null);
-      setIdentityStatus('none');
-      return;
-    }
-    setIdentityStatus('loading');
-    try {
-      const data = await api.getIdentity();
-      // Si mientras tanto cambió la sesión, esta respuesta ya no corresponde.
-      if (requestId !== requestIdRef.current) return;
-      setIdentity(data.identity);
-      setIdentityStatus(data.verified ? 'verified' : 'unverified');
-    } catch {
-      if (requestId !== requestIdRef.current) return;
-      setIdentity(null);
-      setIdentityStatus('error');
-    }
-  }, [userId]);
-
-  // Solo cuando cambia el usuario (no en cada refresh del token).
-  useEffect(() => {
-    refreshIdentity();
-  }, [refreshIdentity]);
+  const user = session?.user ?? null;
 
   const value = {
     session,
-    user: session?.user ?? null,
+    user,
     loading,
-    identity,
-    identityStatus,
-    refreshIdentity,
-    signUp: (email, password, captchaToken) =>
-      supabase.auth.signUp({
-        email,
-        password,
-        options: { captchaToken, emailRedirectTo: AFTER_AUTH_URL() },
-      }),
+    // Solo para la UI: el backend y la base lo vuelven a comprobar en cada acción protegida.
+    emailConfirmed: Boolean(user?.email_confirmed_at),
     signIn: (email, password, captchaToken) =>
       supabase.auth.signInWithPassword({ email, password, options: { captchaToken } }),
     signInWithGoogle: () =>

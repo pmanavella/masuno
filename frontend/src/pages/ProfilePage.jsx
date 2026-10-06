@@ -11,14 +11,10 @@ function formatDate(isoDate) {
   return `${d}/${m}/${y}`;
 }
 
-function formatDateTime(isoDateTime) {
-  return new Date(isoDateTime).toLocaleDateString('es-AR');
-}
-
-// Perfil propio. Los datos de identidad vienen de la verificación (enmascarados) y no se
-// editan; lo único editable es el teléfono.
+// Perfil propio. Los datos personales son los declarados al registrarse (DNI enmascarado): no
+// están verificados oficialmente y no se editan. Lo único editable es el teléfono.
 export function ProfilePage() {
-  const { user, identity, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -41,7 +37,7 @@ export function ProfilePage() {
     setError('');
     try {
       const updated = await api.updatePhone(phone.trim());
-      setProfile(updated);
+      setProfile((current) => ({ ...current, ...updated }));
       setEditing(false);
     } catch (err) {
       setError(err.message);
@@ -56,24 +52,30 @@ export function ProfilePage() {
   }
 
   if (error && !profile) return <div className="card"><p className="error-text">{error}</p></div>;
-  if (!profile || !identity) return <div className="card">Cargando perfil...</div>;
+  if (!profile) return <div className="card">Cargando perfil...</div>;
 
-  const initials = `${identity.first_name[0]}${identity.last_name[0]}`.toUpperCase();
+  // Cuentas creadas sin el formulario de registro (dashboard, Google) no tienen datos declarados.
+  const person = profile.declared;
+  const initials = person ? `${person.first_name[0]}${person.last_name[0]}`.toUpperCase() : user.email[0].toUpperCase();
 
   return (
     <div className="profile-hero">
       <div className="avatar-lg">{initials}</div>
-      <h1>{identity.first_name} {identity.last_name}</h1>
-      <p className="muted">{identity.age} años · Córdoba</p>
-      <p className="verified-badge">✓ Identidad verificada</p>
+      <h1>{person ? `${person.first_name} ${person.last_name}` : user.email}</h1>
+      {person && <p className="muted">{person.age} años · Córdoba</p>}
+      {profile.emailConfirmed && <p className="verified-badge">✓ Email confirmado</p>}
 
       <div className="info-list">
         <div className="info-row"><span>Email</span><span>{user.email}</span></div>
-        <div className="info-row"><span>DNI</span><span>{identity.dni_masked}</span></div>
-        <div className="info-row"><span>CUIL</span><span>{identity.cuil_masked}</span></div>
-        <div className="info-row"><span>Fecha de nacimiento</span><span>{formatDate(identity.birth_date)}</span></div>
-        <div className="info-row"><span>Género</span><span>{genderLabel(identity.gender)}</span></div>
-        <div className="info-row"><span>Verificada el</span><span>{formatDateTime(identity.verified_at)}</span></div>
+        {person ? (
+          <>
+            <div className="info-row"><span>DNI</span><span>{person.dni_masked}</span></div>
+            <div className="info-row"><span>Fecha de nacimiento</span><span>{formatDate(person.birth_date)}</span></div>
+            <div className="info-row"><span>Género</span><span>{genderLabel(person.gender)}</span></div>
+          </>
+        ) : (
+          <p className="error-text">Tu cuenta no tiene cargados tus datos personales. Escribinos para completarlos.</p>
+        )}
 
         {!editing ? (
           <div className="info-row">
@@ -108,10 +110,12 @@ export function ProfilePage() {
         )}
       </div>
 
-      <p className="privacy-note on-dark">
-        🔒 Tu DNI, CUIL y fecha de nacimiento solo los ves vos. Los demás ven "{identity.first_name.split(' ')[0]}{' '}
-        {identity.last_name[0].toUpperCase()}.".
-      </p>
+      {person && (
+        <p className="privacy-note on-dark">
+          Datos declarados por vos al registrarte. 🔒 Tu DNI y fecha de nacimiento solo los ves vos. Los demás ven
+          "{person.first_name.split(' ')[0]} {person.last_name[0].toUpperCase()}.".
+        </p>
+      )}
       <button className="btn-ghost on-dark" type="button" onClick={handleLogout}>Cerrar sesión</button>
     </div>
   );

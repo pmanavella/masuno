@@ -386,6 +386,7 @@ input:focus, select:focus { outline: 2px solid var(--orange-2); outline-offset: 
 }
 .demo-banner a { color: var(--orange-1); font-weight: 700; white-space: nowrap; }
 .demo-banner a:hover { text-decoration: underline; }
+.demo-banner a.demo-credits { color: #a3acc2; font-weight: 500; font-size: 0.68rem; text-decoration: underline; }
 
 /* MOBILE */
 @media (max-width: 480px) {

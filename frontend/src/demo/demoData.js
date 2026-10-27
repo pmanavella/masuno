@@ -36,7 +36,7 @@ export function buildDemoProfile(now = new Date()) {
 // Como lo arma la base para los eventos propios ("Camila R.", "CR").
 export const DEMO_ORGANIZER = { name: 'Camila R.', initials: 'CR' };
 
-// Una foto por categoría (public/demo-fotos/, créditos en public/demo-fotos/CREDITOS.txt). Los eventos que
+// Una foto por categoría (frontend/public/demo-fotos/, créditos en CREDITOS.txt). Los eventos que
 // crea el visitante usan la de su categoría.
 export const CATEGORY_IMAGES = {
   Deportes: '/demo-fotos/deportes.jpg',

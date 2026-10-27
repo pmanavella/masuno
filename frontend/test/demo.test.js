@@ -30,7 +30,7 @@ test('planes de ejemplo: futuros, dentro de la semana, en horarios razonables y 
       const hour = cordobaHour(e.starts_at);
       assert.ok(hour >= 7 || hour === 0, `${e.title} a las ${hour} h`);
       assert.equal(e.city, 'Córdoba Capital');
-      assert.ok(existsSync(new URL(`../../public${e.image_url}`, import.meta.url)), e.image_url);
+      assert.ok(existsSync(new URL(`../public${e.image_url}`, import.meta.url)), e.image_url);
     }
     assert.ok(events.filter((e) => e.organizer_verified_business).length >= 2);
     assert.equal(new Set(events.map((e) => e.image_url)).size, events.length);

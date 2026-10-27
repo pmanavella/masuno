@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js';
+import { DEMO_MODE, DEMO_UNAVAILABLE_MESSAGE } from './demoMode.js';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -46,3 +47,12 @@ export const api = {
   getNotifications: () => request('/notifications'),
   markNotificationsRead: () => request('/notifications/read', { method: 'POST' }),
 };
+
+// Solo en /demo: reemplaza cada llamada por su versión en memoria (src/demo/demoApi.js). Lo que
+// la demo no simula responde con un error claro; nunca se llega al backend real.
+export function installDemoApi(demoApi) {
+  if (!DEMO_MODE) throw new Error('installDemoApi solo se usa en el modo demo');
+  for (const name of Object.keys(api)) {
+    api[name] = demoApi[name] ?? (() => Promise.reject(new Error(DEMO_UNAVAILABLE_MESSAGE)));
+  }
+}

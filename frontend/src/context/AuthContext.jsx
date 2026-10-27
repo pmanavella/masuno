@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient.js';
 
-const AuthContext = createContext(null);
+// Exportado para el proveedor del modo demo (src/demo/DemoProviders.jsx).
+export const AuthContext = createContext(null);
 
 // Después de confirmar el email o entrar con Google se vuelve al inicio.
 const AFTER_AUTH_URL = () => `${window.location.origin}/`;

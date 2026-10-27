@@ -5,7 +5,8 @@ import { notificationText } from '../lib/events.js';
 import { useAuth } from './AuthContext.jsx';
 import { useToast } from './ToastContext.jsx';
 
-const NotificationsContext = createContext(null);
+// Exportado para el proveedor del modo demo (src/demo/DemoProviders.jsx).
+export const NotificationsContext = createContext(null);
 
 // Avisos de la cuenta habilitada (email confirmado): contador de no leídos y suscripción a Realtime.
 // Realtime aplica RLS, así que el canal solo recibe los avisos propios; el filtro por

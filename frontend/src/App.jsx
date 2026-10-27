@@ -12,6 +12,7 @@ import { EventDetailPage } from './pages/EventDetailPage.jsx';
 import { CreateEventPage } from './pages/CreateEventPage.jsx';
 import { MyEventsPage } from './pages/MyEventsPage.jsx';
 import { NotificationsPage } from './pages/NotificationsPage.jsx';
+import { DEMO_MODE } from './lib/demoMode.js';
 
 // Pantallas que requieren sesión. Las acciones de cada una las autoriza el backend (email
 // confirmado); el feed y el detalle de eventos son públicos.
@@ -22,7 +23,11 @@ const PRIVATE_ROUTES = [
   ['/avisos', <NotificationsPage />],
 ];
 
-export default function App() {
+// En la demo ya hay sesión (usuario ficticio): login y registro vuelven al inicio.
+const toHome = <Navigate to="/" replace />;
+
+// demoBanner: aviso del modo demo (src/demo/), se muestra después de la bienvenida.
+export default function App({ demoBanner = null }) {
   const realRef = useRef(null);
   // ?skipwelcome en la URL evita la pantalla de bienvenida (útil mientras se trabaja sobre la Home).
   const [entered, setEntered] = useState(
@@ -33,12 +38,13 @@ export default function App() {
     <>
       <div ref={realRef} className="app-real">
         <div className="app-shell">
+          {entered && demoBanner}
           <NavBar />
           <main className="app-main">
             <Routes>
               <Route path="/" element={<FeedPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/registro" element={<RegisterPage />} />
+              <Route path="/login" element={DEMO_MODE ? toHome : <LoginPage />} />
+              <Route path="/registro" element={DEMO_MODE ? toHome : <RegisterPage />} />
               {/* Pantalla de verificación ARCA retirada del MVP: los links de confirmación de email
                   enviados antes apuntaban acá. */}
               <Route path="/verificacion" element={<Navigate to="/" replace />} />

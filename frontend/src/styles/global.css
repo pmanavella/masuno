@@ -259,6 +259,18 @@ input:focus, select:focus { outline: 2px solid var(--orange-2); outline-offset: 
 .event-footer { display: flex; gap: 12px; font-size: 0.72rem; color: var(--ink-soft); margin-bottom: 6px; }
 .stars { font-size: 0.72rem; color: var(--ink-soft); }
 .stars b { color: var(--navy); }
+/* Organizador que es un negocio verificado (por ahora solo lo usan los datos de la demo). */
+.business-badge {
+  display: inline-block;
+  background: var(--sand);
+  color: var(--navy);
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin-left: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+.host-row .business-badge { margin-left: 2px; }
 .empty-state {
   text-align: center;
   padding: 40px 20px;
@@ -353,6 +365,27 @@ input:focus, select:focus { outline: 2px solid var(--orange-2); outline-offset: 
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* AVISO DEL MODO DEMO */
+.demo-banner {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 7px 16px;
+  background: var(--navy-2);
+  border-bottom: 1px solid var(--navy-3);
+  color: #cfd6e8;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  text-align: center;
+}
+.demo-banner a { color: var(--orange-1); font-weight: 700; white-space: nowrap; }
+.demo-banner a:hover { text-decoration: underline; }
 
 /* MOBILE */
 @media (max-width: 480px) {

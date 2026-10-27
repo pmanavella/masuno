@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { TIME_ZONE } from '../lib/dateFilters.js';
+import { spotsLeftLabel } from '../lib/events.js';
 
 export function catClass(cat) {
   return 'cat-' + cat.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '');
@@ -7,10 +9,10 @@ export function catClass(cat) {
 export function EventCard({ event }) {
   const spotsLeft = event.spots_total - event.spots_taken;
   const start = new Date(event.starts_at);
-  const month = start.toLocaleDateString('es-AR', { month: 'short' }).replace('.', '').toUpperCase();
-  const day = start.getDate();
-  const dateLabel = start.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
-  const timeLabel = start.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  const month = start.toLocaleDateString('es-AR', { month: 'short', timeZone: TIME_ZONE }).replace('.', '').toUpperCase();
+  const day = start.toLocaleDateString('es-AR', { day: 'numeric', timeZone: TIME_ZONE });
+  const dateLabel = start.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: TIME_ZONE });
+  const timeLabel = start.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TIME_ZONE });
 
   return (
     <Link to={`/eventos/${event.id}`} className="event-card">
@@ -23,7 +25,7 @@ export function EventCard({ event }) {
           <span className="avatar-xs">{event.organizer_initials}</span>
           <span>{event.organizer_name} organiza</span>
         </div>
-        <span className="badge-spots">{spotsLeft > 0 ? `Faltan ${spotsLeft} cupos` : 'Completo'}</span>
+        <span className="badge-spots">{spotsLeftLabel(spotsLeft)}</span>
       </div>
       <h4>{event.title}</h4>
       <div className="event-meta">📍 {event.city} · {event.category}</div>
@@ -37,6 +39,7 @@ export function EventCard({ event }) {
         ) : (
           <span>Organizador nuevo</span>
         )}
+        {event.organizer_verified_business && <span className="business-badge">✓ Negocio verificado</span>}
       </div>
     </Link>
   );

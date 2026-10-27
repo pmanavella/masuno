@@ -1,0 +1,48 @@
+Fotos de la demo de +1
+======================
+
+Todas vienen de Wikimedia Commons, con licencia libre. Se redimensionaron a 800 px y se
+recomprimieron; no tienen otros cambios. Se usan solo en el modo demo (/demo); la carpeta no se llama /demo para no chocar con esa ruta.
+
+deportes.jpg
+  "2017-08-04 Sports field, Caminho Vale da Azinheira, Olhos de Água (1)" — Kolforn — CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:2017-08-04_Sports_field,_Caminho_Vale_da_Azinheira,_Olhos_de_%C3%81gua_(1).JPG
+
+aire-libre.jpg
+  "Los Gigantes Mayo 2026 0014" — Gedankenstuecke — CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Los_Gigantes_Mayo_2026_0014.jpg
+
+gastronomia.jpg
+  "Wine and cheese tasting session at WMHack 2018 - table" — Toni Hermoso Pulido — CC BY-SA 2.0
+  https://commons.wikimedia.org/wiki/File:Wine_and_cheese_tasting_session_at_WMHack_2018_-_table.jpeg
+
+juegos.jpg
+  "Games & Puzzles (6038332050)" — Helgi Halldórsson — CC BY-SA 2.0
+  https://commons.wikimedia.org/wiki/File:Games_%26_Puzzles_(6038332050).jpg
+
+cultura.jpg
+  "Cara principal del Museo Provincial de Bellas Artes Emilio Caraffa" — Lassabias — CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Cara_principal_del_Museo_Provincial_de_Bellas_Artes_Emilio_Caraffa.JPG
+
+musica.jpg
+  "Frenchmen Street New Orleans December 28, 2016 - Jazz band at the Spotted Cat" — osseous — CC BY 2.0
+  https://commons.wikimedia.org/wiki/File:Frenchmen_Street_New_Orleans_December_28,_2016_-_Jazz_band_at_the_Spotted_Cat.jpg
+
+networking.jpg
+  "WeWork Coworking Space, 333 Seymour, Vancouver (31392420497)" — GoToVan — CC BY 2.0
+  https://commons.wikimedia.org/wiki/File:WeWork_Coworking_Space,_333_Seymour,_Vancouver_(31392420497).jpg
+
+bienestar.jpg
+  "Outdoor Yoga At the Park" — Vuemobi Media — CC BY-SA 2.0
+  https://commons.wikimedia.org/wiki/File:Outdoor_Yoga_At_the_Park.jpg
+
+social.jpg
+  "DSC 7074 A group of friends enjoying dinner and wine at a cozy restaurant..." — PattayaPatrol — CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:DSC_7074_A_group_of_friends_enjoying_dinner_and_wine_at_a_cozy_restaurant_seated_around_a_table_with_a_red_tablecloth_and_bottles_displayed_on_the_wall_behind_them.jpg
+
+vida-nocturna.jpg
+  "Dance party at night, DJ booth, Gili Trawangan (island), Indonesia" — Vyacheslav Argenberg — CC BY 4.0
+  https://commons.wikimedia.org/wiki/File:Dance_party_at_night,_DJ_booth,_Gili_Trawangan_(island),_Indonesia.jpg
+
+Licencias: https://creativecommons.org/licenses/by/2.0/ · https://creativecommons.org/licenses/by/4.0/
+           https://creativecommons.org/licenses/by-sa/2.0/ · https://creativecommons.org/licenses/by-sa/4.0/

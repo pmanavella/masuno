@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { useNotifications } from '../context/NotificationsContext.jsx';
 import { catClass } from '../components/EventCard.jsx';
 import { genderLabel } from '../lib/genders.js';
-import { REQUEST_STATUS_LABELS, ageRangeLabel, formatEventDate } from '../lib/events.js';
+import { REQUEST_STATUS_LABELS, ageRangeLabel, formatEventDate, spotsDetailLabel } from '../lib/events.js';
 
 export function EventDetailPage() {
   const { id } = useParams();
@@ -56,6 +56,7 @@ export function EventDetailPage() {
         <div className="host-row">
           <span className="avatar-xs">{event.organizer_initials}</span>
           <span>{event.organizer_name} organiza</span>
+          {event.organizer_verified_business && <span className="business-badge">✓ Negocio verificado</span>}
         </div>
         <h1>{event.title}</h1>
         <p className="event-meta">📍 {event.city} · {event.category}</p>
@@ -63,7 +64,7 @@ export function EventDetailPage() {
         {event.description && <p className="event-description">{event.description}</p>}
 
         <div className="info-list compact">
-          <div className="info-row"><span>Cupos</span><span>{spotsLeft > 0 ? `${spotsLeft} libres de ${event.spots_total}` : `Completo (${event.spots_total})`}</span></div>
+          <div className="info-row"><span>Cupos</span><span>{spotsDetailLabel(spotsLeft, event.spots_total)}</span></div>
           <div className="info-row"><span>Edad</span><span>{ageRangeLabel(event.age_min, event.age_max)}</span></div>
           <div className="info-row"><span>Género</span><span>{genderLabel(event.gender)}</span></div>
         </div>

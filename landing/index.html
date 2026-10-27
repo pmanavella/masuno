@@ -356,7 +356,7 @@ html.js .steps li.on h3,html.js .steps li.on p{opacity:1}
             <div class="spots" id="pSpots">
               <span class="spot s3">L</span><span class="spot s1">M</span><span class="spot s2">S</span><span class="spot spot-empty" id="slot">+1</span>
             </div>
-            <button class="join" id="joinBtn" tabindex="-1">Unirme</button>
+            <button class="join" id="joinBtn" tabindex="-1">Pedir unirme</button>
             <p class="pending" id="pPending">Lucía revisa tu solicitud y te avisamos.</p>
           </div>
         </article>
@@ -568,7 +568,7 @@ html.js .steps li.on h3,html.js .steps li.on p{opacity:1}
    ============================================================ */
 const CONFIG = {
   // Link de la demo de la app (provisorio)
-  DEMO_URL: "https://LINK-DE-LA-DEMO.vercel.app",
+  DEMO_URL: "http://localhost:5173/demo",
   // Supabase: Project Settings > API (o Data API)
   SUPABASE_URL: "https://TU-PROYECTO.supabase.co",
   // Usar la clave pública: "anon public" o "publishable" (NUNCA la service_role / secret)
@@ -671,7 +671,7 @@ document.querySelectorAll(".js-demo").forEach(a => {
     if (p.filled > 3) html += `<span class="spot more">+${p.filled - 3}</span>`;
     html += `<span class="spot spot-empty" id="slot">+1</span>`;
     $("pSpots").innerHTML = html;
-    $("joinBtn").textContent = "Unirme";
+    $("joinBtn").textContent = "Pedir unirme";
     $("pPending").textContent = p.host + " revisa tu solicitud y te avisamos.";
     stage.classList.remove("joined");
   }

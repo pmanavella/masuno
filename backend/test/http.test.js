@@ -105,6 +105,22 @@ describe('usuario no autenticado', () => {
     assert.equal(detail.body.viewer, null);
   });
 
+  test('el filtro por día usa la hora de Córdoba y rechaza fechas inválidas', async () => {
+    let received;
+    const original = EventModel.list;
+    EventModel.list = async (filters) => {
+      received = filters;
+      return [];
+    };
+    try {
+      assert.equal((await api('GET', '/events?date=2026-10-31')).status, 200);
+      assert.deepEqual(received.dayRange, { start: '2026-10-31T00:00:00-03:00', end: '2026-11-01T00:00:00-03:00' });
+      assert.equal((await api('GET', '/events?date=31/10/2026')).status, 400);
+    } finally {
+      EventModel.list = original;
+    }
+  });
+
   test('no puede ejecutar acciones protegidas', async () => {
     const protectedCalls = [
       ['POST', '/events', newEvent],

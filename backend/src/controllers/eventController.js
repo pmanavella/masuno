@@ -1,6 +1,8 @@
 import { EventModel } from '../models/EventModel.js';
 import { RequestModel } from '../models/RequestModel.js';
 import { eventError, reasonMessage, validateNewEvent } from '../services/eventService.js';
+import { cordobaDayRange } from '../utils/cordobaDay.js';
+import { HttpError } from '../utils/HttpError.js';
 
 function toInt(value) {
   const n = Number(value);
@@ -10,11 +12,13 @@ function toInt(value) {
 export async function listEvents(req, res, next) {
   try {
     const { city, categories, date, ageMin, ageMax, gender } = req.query;
+    const dayRange = date ? cordobaDayRange(date) : null;
+    if (date && !dayRange) throw new HttpError(400, 'invalid_input', 'La fecha tiene que ser AAAA-MM-DD.');
     const events = await EventModel.list(
       {
         city,
         categories: categories ? categories.split(',').filter(Boolean) : [],
-        date,
+        dayRange,
         ageMin: toInt(ageMin),
         ageMax: toInt(ageMax),
         gender,

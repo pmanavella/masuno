@@ -12,8 +12,9 @@ export const EventModel = {
 
     if (filters.city) query = query.eq('city', filters.city);
     if (filters.categories && filters.categories.length > 0) query = query.in('category', filters.categories);
-    if (filters.date) {
-      query = query.gte('starts_at', `${filters.date}T00:00:00`).lte('starts_at', `${filters.date}T23:59:59`);
+    // Día en hora de Córdoba (el controlador ya validó la fecha).
+    if (filters.dayRange) {
+      query = query.gte('starts_at', filters.dayRange.start).lt('starts_at', filters.dayRange.end);
     }
     // Un evento matchea el filtro de edad si su rango [age_min, age_max] se superpone con [ageMin, ageMax]
     // pedido. age_max null = sin límite superior. ageMin ya viene validado como entero.

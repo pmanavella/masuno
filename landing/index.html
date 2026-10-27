@@ -132,6 +132,12 @@ section.block{padding:104px 0}
 .problems{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;border-top:2px solid var(--ink);padding-top:32px}
 .problems h3{font-size:21px;letter-spacing:-.015em;line-height:1.25;margin:0 0 10px}
 .problems p{margin:0;color:var(--muted)}
+.survey{margin:0 0 56px}
+.survey-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:40px;margin:0}
+.survey-num{font-size:clamp(40px,5vw,64px);line-height:1;letter-spacing:-.035em;font-weight:800;color:var(--orange);margin:0 0 12px}
+.survey-text{margin:0;font-size:18px;max-width:34ch}
+.survey-source{margin:24px 0 0;font-size:14px;color:var(--muted)}
+@media (max-width:560px){.survey-stats{grid-template-columns:1fr;gap:28px}}
 
 /* Dos lados */
 .sides{display:grid;grid-template-columns:1fr 1fr;gap:24px}
@@ -307,7 +313,7 @@ html.js .steps li.on h3,html.js .steps li.on p{opacity:1}
     <a href="#inicio" class="logo logo-on-navy" id="hdrLogo" aria-label="+1, inicio">+1</a>
     <nav aria-label="Principal">
       <a class="navlink" href="#como-funciona">Cómo funciona</a>
-      <a class="navlink" href="#negocios">Quiénes lo usan</a>
+      <a class="navlink" href="#para-quien">Para quién es</a>
       <a class="navlink" href="#equipo">Quiénes somos</a>
       <a class="btn btn-primary js-demo" href="#">Probar la demo</a>
     </nav>
@@ -369,6 +375,19 @@ html.js .steps li.on h3,html.js .steps li.on p{opacity:1}
     <div class="wrap">
       <h2 class="h2" style="max-width:none">Las ganas están.<br>Lo que falta es con quién.</h2>
       <p class="intro">Hacer algo nuevo suele depender de que alguien más se prenda. Y cuando el grupo no alcanza, el plan se cae.</p>
+      <div class="survey">
+        <dl class="survey-stats">
+          <div>
+            <dt class="survey-num">3 de cada 4 personas</dt>
+            <dd class="survey-text">alguna vez no pudieron hacer una actividad porque les faltaba gente.</dd>
+          </div>
+          <div>
+            <dt class="survey-num">9 de cada 10 personas</dt>
+            <dd class="survey-text">tuvieron que cancelar un plan por no conseguir suficientes personas.</dd>
+          </div>
+        </dl>
+        <p class="survey-source">Datos relevados mediante encuesta realizada por el equipo de +1 a más de 70 personas durante septiembre y octubre de 2026.</p>
+      </div>
       <div class="problems">
         <div>
           <h3>Querés hacer algo y no tenés con quién.</h3>
@@ -387,7 +406,7 @@ html.js .steps li.on h3,html.js .steps li.on p{opacity:1}
   </section>
 
   <!-- DOS LADOS -->
-  <section class="block" style="padding-top:0" id="negocios">
+  <section class="block" style="padding-top:0" id="para-quien">
     <div class="wrap">
       <h2 class="h2">Un mismo lugar para quienes buscan un plan y para quienes lo proponen.</h2>
       <p class="intro">Cada plan tiene cupos. Quien lo publica define cuántas personas faltan y quién puede sumarse.</p>
